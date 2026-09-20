@@ -30,7 +30,7 @@ go tool dist list
 
 Há quatro tipos de utilização:
 
-*Obs.:* Os exemplos serão dados sem compilação
+*Obs.:* Os exemplos serão demonstrados sem compilação
 
 ### Porta única
 ```

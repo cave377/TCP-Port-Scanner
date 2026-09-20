@@ -12,10 +12,11 @@ import (
 func varredura(inicio int, fim int, alvo string) {
 	for door := inicio; door <= fim; door++ {
 		address := fmt.Sprintf("%s:%d", alvo, door)
-		_, err := net.Dial("tcp", address)
+		conexao, err := net.Dial("tcp", address)
 		if err == nil {
 			fmt.Println("Porta aberta: ", door)
 		}
+		conexao.Close()
 	}
 }
 
@@ -51,10 +52,11 @@ func main() {
 			for cont := 0; cont < len(tratado); cont++ {
 				door, _ := strconv.Atoi(tratado[cont])
 				address := fmt.Sprintf("%s:%d", *alvo, door)
-				_, err := net.Dial("tcp", address)
+				conexao, err := net.Dial("tcp", address)
 				if err == nil {
 					fmt.Println("Porta aberta: ", tratado[cont])
 				}
+				conexao.Close()
 			}
 		case *porta == "default":
 			fmt.Println("Portas a verificar -> ", *porta)
@@ -63,10 +65,11 @@ func main() {
 			fmt.Println("Portas a verificar -> ", *porta)
 			tratado, _ := strconv.Atoi(*porta)
 			address := fmt.Sprintf("%s:%d", *alvo, tratado)
-			_, err := net.Dial("tcp", address)
+			conexao, err := net.Dial("tcp", address)
 			if err == nil {
 				fmt.Println("Porta aberta: ", tratado)
 			}
+			conexao.Close()
 		default:
 			flag.Usage()
 		}
