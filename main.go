@@ -15,8 +15,8 @@ func varredura(inicio int, fim int, alvo string) {
 		conexao, err := net.Dial("tcp", address)
 		if err == nil {
 			fmt.Println("Porta aberta: ", door)
+			conexao.Close()
 		}
-		conexao.Close()
 	}
 }
 
@@ -28,9 +28,9 @@ func main() {
 		fmt.Fprintln(os.Stderr, "\nOpções:")
 		flag.PrintDefaults()
 		fmt.Fprintln(os.Stderr, "\nExemplos:")
-		fmt.Fprintf(os.Stderr, "-u http://www.example.com -p 22\n")
-		fmt.Fprintf(os.Stderr, "-u http://www.example.com -p 22-100\n")
-		fmt.Fprintf(os.Stderr, "-u http://www.example.com -p 22,53,135\n")
+		fmt.Fprintf(os.Stderr, "-u example.com -p 22\n")
+		fmt.Fprintf(os.Stderr, "-u example.com -p 22-100\n")
+		fmt.Fprintf(os.Stderr, "-u example.com -p 22,53,135\n")
 	}
 	flag.Parse()
 	if *alvo == "" {
@@ -55,8 +55,9 @@ func main() {
 				conexao, err := net.Dial("tcp", address)
 				if err == nil {
 					fmt.Println("Porta aberta: ", tratado[cont])
+					conexao.Close()
 				}
-				conexao.Close()
+
 			}
 		case *porta == "default":
 			fmt.Println("Portas a verificar -> ", *porta)
@@ -68,8 +69,8 @@ func main() {
 			conexao, err := net.Dial("tcp", address)
 			if err == nil {
 				fmt.Println("Porta aberta: ", tratado)
+				conexao.Close()
 			}
-			conexao.Close()
 		default:
 			flag.Usage()
 		}
