@@ -6,15 +6,15 @@ Um escaner de portas com possibilidade de compilação para diversos sistemas op
 ## Instalação/Compilação
 ### Linux
 ```
-GOOS="linux" GOARCH"amd64" go build main.go
+GOOS="linux" GOARCH="amd64" go build main.go
 ```
 ### Windows
 ```
-GOOS="windows" GOARCH"amd64" go build main.go
+GOOS="windows" GOARCH="amd64" go build main.go
 ```
 ### MAC
 ```
-GOOS="darwin" GOARCH"arm64" go build main.go
+GOOS="darwin" GOARCH="arm64" go build main.go
 ```
 
 ## Utilização
