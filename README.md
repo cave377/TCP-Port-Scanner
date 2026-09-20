@@ -14,7 +14,7 @@ GOOS="windows" GOARCH"amd64" go build main.go
 ```
 ### MAC
 ```
-GOOS="darwin" GOARCH"ard64" go build main.go
+GOOS="darwin" GOARCH"arm64" go build main.go
 ```
 
 ## Utilização
