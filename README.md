@@ -16,7 +16,14 @@ GOOS="windows" GOARCH="amd64" go build main.go
 ```
 GOOS="darwin" GOARCH="arm64" go build main.go
 ```
+---
 
+***Obs.:*** Caso queira outro tipo de compilação, dê o seguinte comando para mostrar as combinações
+
+```
+go tool dist list
+```
+---
 ## Utilização
 
 ![alt text](images/image-4.png)
