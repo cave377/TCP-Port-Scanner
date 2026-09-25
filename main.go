@@ -7,16 +7,19 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 )
 
-func varredura(inicio int, fim int, alvo string) {
-	for door := inicio; door <= fim; door++ {
-		address := fmt.Sprintf("%s:%d", alvo, door)
-		conexao, err := net.Dial("tcp", address)
+func worker_varredura(portas chan int, alvo string, wg *sync.WaitGroup) {
+	for porta := range portas {
+		end := fmt.Sprintf("%s:%d", alvo, porta)
+		conexao, err := net.Dial("tcp", end)
 		if err == nil {
-			fmt.Println("Porta aberta: ", door)
+			fmt.Println("Porta aberta: ", porta)
 			conexao.Close()
 		}
+
+		wg.Done()
 	}
 }
 
@@ -37,40 +40,53 @@ func main() {
 		fmt.Fprintf(os.Stderr, "erro: a flag -u é obrigatória \n")
 		flag.Usage()
 	} else {
+		workers_portas := make(chan int, 100)
+		var wg sync.WaitGroup
 		fmt.Println("Alvo -> ", *alvo)
+		for i := 0; i < cap(workers_portas); i++ {
+			go worker_varredura(workers_portas, *alvo, &wg)
+		}
 		switch {
 		case strings.Contains(*porta, "-"):
 			fmt.Println("Portas a verificar -> ", *porta)
 			tratado := strings.Split(*porta, "-")
 			i, _ := strconv.Atoi(tratado[0])
 			f, _ := strconv.Atoi(tratado[1])
-			varredura(i, f, *alvo)
+			for cont := i; cont <= f; cont++ {
+				wg.Add(1)
+				workers_portas <- cont
+			}
+			wg.Wait()
+			close(workers_portas)
 
 		case strings.Contains(*porta, ","):
 			fmt.Println("Portas a verificar -> ", *porta)
 			tratado := strings.Split(*porta, ",")
 			for cont := 0; cont < len(tratado); cont++ {
-				door, _ := strconv.Atoi(tratado[cont])
-				address := fmt.Sprintf("%s:%d", *alvo, door)
-				conexao, err := net.Dial("tcp", address)
-				if err == nil {
-					fmt.Println("Porta aberta: ", tratado[cont])
-					conexao.Close()
-				}
-
+				wg.Add(1)
+				num, _ := strconv.Atoi(tratado[cont])
+				workers_portas <- num
 			}
+			wg.Wait()
+			close(workers_portas)
+
 		case *porta == "default":
 			fmt.Println("Portas a verificar -> ", *porta)
-			varredura(1, 1000, *alvo)
+			for i := 1; i <= 1000; i++ {
+				wg.Add(1)
+				workers_portas <- i
+			}
+			wg.Wait()
+			close(workers_portas)
+
 		case !strings.ContainsAny(*porta, "-,"):
 			fmt.Println("Portas a verificar -> ", *porta)
 			tratado, _ := strconv.Atoi(*porta)
-			address := fmt.Sprintf("%s:%d", *alvo, tratado)
-			conexao, err := net.Dial("tcp", address)
-			if err == nil {
-				fmt.Println("Porta aberta: ", tratado)
-				conexao.Close()
-			}
+			wg.Add(1)
+			workers_portas <- tratado
+			wg.Wait()
+			close(workers_portas)
+
 		default:
 			flag.Usage()
 		}
