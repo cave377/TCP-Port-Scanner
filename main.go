@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/schollz/progressbar/v3"
 )
@@ -15,7 +16,7 @@ import (
 func worker_varredura(portas chan int, alvo string, wg *sync.WaitGroup, bar *progressbar.ProgressBar) {
 	for porta := range portas {
 		end := fmt.Sprintf("%s:%d", alvo, porta)
-		conexao, err := net.Dial("tcp", end)
+		conexao, err := net.DialTimeout("tcp", end, 5*time.Second)
 		if err == nil {
 			fmt.Println("\nPorta aberta: ", porta)
 			conexao.Close()
@@ -28,13 +29,14 @@ func worker_varredura(portas chan int, alvo string, wg *sync.WaitGroup, bar *pro
 func main() {
 	alvo := flag.String("u", "", "url do alvo")
 	porta := flag.String("p", "default", "porta para escaneamento (default escaneia da 1-1000)")
+	threads := flag.Int("t", 50, "quantidade de workers (default: 50)")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Uso: main.go [opções]\n\n")
 		fmt.Fprintln(os.Stderr, "\nOpções:")
 		flag.PrintDefaults()
 		fmt.Fprintln(os.Stderr, "\nExemplos:")
 		fmt.Fprintf(os.Stderr, "-u example.com -p 22\n")
-		fmt.Fprintf(os.Stderr, "-u example.com -p 22-100\n")
+		fmt.Fprintf(os.Stderr, "-u example.com -p 22-100 -t 20\n")
 		fmt.Fprintf(os.Stderr, "-u example.com -p 22,53,135\n")
 	}
 	flag.Parse()
@@ -45,9 +47,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Println("Alvo -> ", *alvo)
+	fmt.Println("## Iniciando TCP-SCAN ##")
+	fmt.Println("- Alvo -> ", *alvo)
+	fmt.Println("- Quantidade de Threads -> ", *threads)
 
-	workers_portas := make(chan int, 100)
+	workers_portas := make(chan int, *threads)
 	var wg sync.WaitGroup
 
 	for i := 0; i < cap(workers_portas); i++ {
@@ -57,7 +61,7 @@ func main() {
 
 	switch {
 	case strings.Contains(*porta, "-"):
-		fmt.Println("Portas a verificar -> ", *porta)
+		fmt.Println("- Portas a verificar -> ", *porta)
 		tratado := strings.Split(*porta, "-")
 		i, err1 := strconv.Atoi(strings.TrimSpace(tratado[0]))
 		f, err2 := strconv.Atoi(strings.TrimSpace(tratado[1]))
@@ -80,7 +84,7 @@ func main() {
 		close(workers_portas)
 
 	case strings.Contains(*porta, ","):
-		fmt.Println("Portas a verificar -> ", *porta)
+		fmt.Println("- Portas a verificar -> ", *porta)
 		tratado := strings.Split(*porta, ",")
 
 		total := len(tratado)
@@ -103,7 +107,7 @@ func main() {
 		close(workers_portas)
 
 	case *porta == "default":
-		fmt.Println("Portas a verificar -> ", *porta)
+		fmt.Println("- Portas a verificar -> ", *porta)
 
 		total := 1000
 		bar := progressbar.Default(int64(total))
@@ -119,7 +123,7 @@ func main() {
 		close(workers_portas)
 
 	case !strings.ContainsAny(*porta, "-,"):
-		fmt.Println("Portas a verificar -> ", *porta)
+		fmt.Println("- Portas a verificar -> ", *porta)
 		tratado, err := strconv.Atoi(*porta)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "erro: porta inválida")
