@@ -107,7 +107,7 @@ func main() {
 		close(workers_portas)
 
 	case *porta == "default":
-		fmt.Println("- Portas a verificar -> ", *porta)
+		fmt.Println("- Portas a verificar -> ", *porta, "(1-1000)")
 
 		total := 1000
 		bar := progressbar.Default(int64(total))
